@@ -1,0 +1,26 @@
+<h2>Client List</h2>
+
+<table border="1" *ngIf="clients.length > 0; else noData">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Project</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let client of clients">
+      <td>{{ client.clientId }}</td>
+      <td>{{ client.clientName }}</td>
+      <td>{{ client.clientEmail }}</td>
+      <td>{{ client.clientProject }}</td>
+      <td><button (click)="deleteClient(client.clientId!)">Delete</button></td>
+    </tr>
+  </tbody>
+</table>
+
+<ng-template #noData>
+  <p>No clients available.</p>
+</ng-template>
