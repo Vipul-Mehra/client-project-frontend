@@ -1,0 +1,42 @@
+<div class="container">
+    <h2>Resource Management</h2>
+  
+    <input type="text" [(ngModel)]="searchTerm" (input)="filterResources()" placeholder="Search Resources..." class="form-control mb-3" />
+  
+    <form (ngSubmit)="addResource()" class="mb-3 d-flex gap-2">
+      <input type="text" [(ngModel)]="newResource.name" name="name" placeholder="Name" required class="form-control" />
+      <input type="text" [(ngModel)]="newResource.skill" name="skill" placeholder="Skill" required class="form-control" />
+      <button type="submit" class="btn btn-primary">Add Resource</button>
+    </form>
+  
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Skill</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let resource of filteredResources">
+          <ng-container *ngIf="editingResource?.id === resource.id; else viewMode">
+            <td><input [(ngModel)]="editingResource.name" class="form-control" /></td>
+            <td><input [(ngModel)]="editingResource.skill" class="form-control" /></td>
+            <td>
+              <button (click)="updateResource()" class="btn btn-success btn-sm me-2">Save</button>
+              <button (click)="cancelEdit()" class="btn btn-secondary btn-sm">Cancel</button>
+            </td>
+          </ng-container>
+          <ng-template #viewMode>
+            <td>{{ resource.name }}</td>
+            <td>{{ resource.skill }}</td>
+            <td>
+              <button (click)="editResource(resource)" class="btn btn-warning btn-sm me-2">Edit</button>
+              <button (click)="deleteResource(resource.id)" class="btn btn-danger btn-sm">Delete</button>
+            </td>
+          </ng-template>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  

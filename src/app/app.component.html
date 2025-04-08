@@ -1,2 +1,8 @@
-<h1>Client Tracking App</h1>
-<app-client-list></app-client-list>
+<div class="container mt-5">
+    <h1>{{ title }}</h1>
+    <nav class="mb-4">
+      <button routerLink="/clients" routerLinkActive="active" class="btn btn-primary me-2">Clients</button>
+      <button routerLink="/resources" routerLinkActive="active" class="btn btn-secondary me-2">Resources</button>
+      </nav>
+    <router-outlet></router-outlet>
+  </div>
