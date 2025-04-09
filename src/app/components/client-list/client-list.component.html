@@ -1,20 +1,45 @@
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let client of clients">
-      <td>{{ client.name }}</td>
-      <td>{{ client.email }}</td>
-      <td>
-        <button (click)="editClient(client)">Edit</button>
-        <button (click)="deleteClient(client.id)">Delete</button>
-      </td>
-    </tr>
-    
-  </tbody>
-</table>
+<div>
+  <h2 class="text-xl font-bold mb-2">Clients</h2>
+
+  <input 
+    [(ngModel)]="searchTerm" 
+    placeholder="Search clients..." 
+    class="p-2 border mb-4 w-full" />
+
+  <form (submit)="addClient()" class="flex gap-2 mb-4">
+    <input 
+      [(ngModel)]="newClient.clientName" 
+      name="clientName" 
+      placeholder="Client Name" 
+      class="p-2 border" 
+      required />
+    <input 
+      [(ngModel)]="newClient.clientEmail" 
+      name="clientEmail" 
+      type="email"
+      placeholder="Email" 
+      class="p-2 border" 
+      required />
+    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Add</button>
+  </form>
+
+  <table class="w-full border">
+    <thead>
+      <tr>
+        <th class="border p-2">Name</th>
+        <th class="border p-2">Email</th>
+        <th class="border p-2">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let client of filteredClients()">
+        <td class="border p-2">{{ client.clientName || 'N/A' }}</td>
+        <td class="border p-2">{{ client.clientEmail || 'N/A' }}</td>
+        <td class="border p-2">
+          <button (click)="editClient(client)" class="text-yellow-600">Edit</button>
+          <button (click)="deleteClient(client.clientId)" class="text-red-600 ml-2">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>  
+</div>

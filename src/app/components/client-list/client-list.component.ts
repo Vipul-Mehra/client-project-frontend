@@ -3,44 +3,21 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ClientService } from '../../services/client.service';
 
+interface Client {
+  clientId: number;
+  clientName: string;
+  clientEmail: string;
+}
+
 @Component({
   selector: 'app-client-list',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    <div>
-      <h2 class="text-xl font-bold mb-2">Clients</h2>
-      <input [(ngModel)]="searchTerm" placeholder="Search clients..." class="p-2 border mb-4 w-full" />
-      <form (submit)="addClient()" class="flex gap-2 mb-4">
-        <input [(ngModel)]="newClient.name" name="name" placeholder="Client Name" class="p-2 border" required />
-        <input [(ngModel)]="newClient.email" name="email" placeholder="Email" class="p-2 border" required />
-        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Add</button>
-      </form>
-      <table class="w-full border">
-        <thead>
-          <tr>
-            <th class="border p-2">Name</th>
-            <th class="border p-2">Email</th>
-            <th class="border p-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let client of filteredClients()">
-            <td class="border p-2">{{ client.clientName || 'N/A' }}</td>
-            <td class="border p-2">{{ client.clientEmail || 'N/A' }}</td>
-            <td class="border p-2">
-              <button (click)="editClient(client)" class="text-yellow-600">Edit</button>
-              <button (click)="deleteClient(client.clientId)" class="text-red-600 ml-2">Delete</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  `
+  templateUrl: './client-list.component.html' // ✅ point to external HTML file
 })
 export class ClientListComponent implements OnInit {
-  clients: any[] = [];
-  newClient = { name: '', email: '' };
+  clients: Client[] = [];
+  newClient: Partial<Client> = { clientName: '', clientEmail: '' };
   searchTerm = '';
 
   constructor(private clientService: ClientService) {}
@@ -50,25 +27,41 @@ export class ClientListComponent implements OnInit {
   }
 
   loadClients() {
-    this.clientService.getClients().subscribe(data => {
-      console.log('Clients Data:', data);  // Debugging line
-      this.clients = data;
+    this.clientService.getClients().subscribe({
+      next: (data: any[]) => {
+        this.clients = data.map(client => ({
+          clientId: client.id ?? client.clientId,
+          clientName: client.name ?? client.clientName,
+          clientEmail: client.email ?? client.clientEmail
+        }));
+        console.log('Mapped Clients:', this.clients);
+      },
+      error: err => console.error('Error loading clients:', err)
     });
   }
 
   addClient() {
-    this.clientService.addClient(this.newClient).subscribe(() => {
-      this.newClient = { name: '', email: '' };
-      this.loadClients();
+    if (!this.newClient.clientName || !this.newClient.clientEmail) return;
+
+    this.clientService.addClient(this.newClient).subscribe({
+      next: () => {
+        this.newClient = { clientName: '', clientEmail: '' };
+        this.loadClients();
+      },
+      error: err => console.error('Error adding client:', err)
     });
   }
 
-  editClient(client: any) {
+  editClient(client: Client) {
     const updatedName = prompt('Enter new name', client.clientName);
     const updatedEmail = prompt('Enter new email', client.clientEmail);
+
     if (updatedName && updatedEmail) {
       const updated = { ...client, clientName: updatedName, clientEmail: updatedEmail };
-      this.clientService.updateClient(updated.clientId, updated).subscribe(() => this.loadClients());
+      this.clientService.updateClient(client.clientId, updated).subscribe({
+        next: () => this.loadClients(),
+        error: err => console.error('Error updating client:', err)
+      });
     }
   }
 
@@ -79,16 +72,16 @@ export class ClientListComponent implements OnInit {
     }
 
     this.clientService.deleteClient(id).subscribe({
-      next: () => {
-        this.loadClients(); // Refresh the client list after deletion
-      },
-      error: (err) => {
-        console.error('Error deleting client:', err);
-      }
+      next: () => this.loadClients(),
+      error: err => console.error('Error deleting client:', err)
     });
   }
 
   filteredClients() {
-    return this.clients.filter(c => (c.clientName || '').toLowerCase().includes(this.searchTerm.toLowerCase()));
+    const term = this.searchTerm.toLowerCase();
+    return this.clients.filter(c =>
+      (c.clientName || '').toLowerCase().includes(term) ||
+      (c.clientEmail || '').toLowerCase().includes(term)
+    );
   }
 }
