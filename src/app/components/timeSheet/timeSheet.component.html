@@ -1,0 +1,36 @@
+<div>
+  <h2 class="text-xl font-bold mb-2">Work Table</h2>
+
+  <!-- Search Input -->
+  <label>
+    <input [(ngModel)]="searchTerm" placeholder="Search clients..." class="p-2 border mb-4 w-full" />
+  </label>
+
+  <!-- Table -->
+  <table class="w-full border">
+    <thead>
+    <tr>
+      <th class="border p-2">Resource ID</th>
+      <th class="border p-2">Client Project ID</th>
+      <th class="border p-2">Work Date</th>
+      <th class="border p-2">Hours Worked</th>
+      <th class="border p-2">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Loop through filtered clients -->
+    <tr *ngFor="let work of filteredWorkTimetables">
+    <td>{{ work.resourceId }}</td>
+      <td>{{ work.clientProjectId }}</td>
+      <td>{{ work.workDate | date: 'yyyy-MM-dd' }}</td>
+      <td>{{ work.hoursWorked }}</td>
+      <td>
+        <!-- Edit Button -->
+        <button (click)="editClient(work)" class="text-yellow-600">Edit</button>
+        <!-- Delete Button -->
+        <button (click)="deleteClient(work.workId)" class="text-red-600 ml-2">Delete</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>

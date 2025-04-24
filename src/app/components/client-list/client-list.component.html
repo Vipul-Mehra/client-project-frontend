@@ -1,24 +1,11 @@
 <div>
   <h2 class="text-xl font-bold mb-2">Clients</h2>
 
-  <input 
-    [(ngModel)]="searchTerm" 
-    placeholder="Search clients..." 
-    class="p-2 border mb-4 w-full" />
+  <input [(ngModel)]="searchTerm" placeholder="Search clients..." class="p-2 border mb-4 w-full" />
 
   <form (submit)="addClient()" class="flex gap-2 mb-4">
-    <input 
-      [(ngModel)]="newClient.clientName" 
-      name="clientName" 
-      placeholder="Client Name" 
-      class="p-2 border" 
-      required />
-    <input 
-      [(ngModel)]="newClient.clientEmail" 
-      name="clientEmail" 
-      type="email"
-      placeholder="Email" 
-      class="p-2 border" 
+    <input [(ngModel)]="newClient.clientName" name="clientName" placeholder="Client Name" class="p-2 border" required />
+    <input [(ngModel)]="newClient.clientEmail" name="clientEmail" type="email" placeholder="Email" class="p-2 border"
       required />
     <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Add</button>
   </form>
@@ -41,5 +28,5 @@
         </td>
       </tr>
     </tbody>
-  </table>  
+  </table>
 </div>
