@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { TimeSheet } from '../models/time-sheet.model'; // adjust path as needed
+import { TimeSheet } from '../model/timeSheet';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class TimeSheetService {
-  private apiUrl = 'http://localhost:8080/api/time-sheets';
+  private apiUrl = 'http://localhost:8080/timeSheets';
 
   constructor(private http: HttpClient) {}
 

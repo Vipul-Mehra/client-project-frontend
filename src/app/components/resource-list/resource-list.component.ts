@@ -1,47 +1,21 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common'; // For Angular directives like *ngFor, *ngIf
+import { FormsModule } from '@angular/forms'; // For [(ngModel)]
 import { ResourceService } from '../../services/resource.service';
+import { Resources } from '../../model/resource'; // Corrected import
 
 @Component({
   selector: 'app-resource-list',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
-    <div>
-      <h2 class="text-xl font-bold mb-2">Resources</h2>
-      <input [(ngModel)]="searchTerm" placeholder="Search resources..." class="p-2 border mb-4 w-full" />
-      <form (submit)="addResource()" class="flex gap-2 mb-4">
-        <input [(ngModel)]="newResource.name" name="name" placeholder="Resource Name" class="p-2 border" required />
-        <input [(ngModel)]="newResource.skill" name="skill" placeholder="Skill" class="p-2 border" required />
-        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Add</button>
-      </form>
-      <table class="w-full border">
-        <thead>
-          <tr>
-            <th class="border p-2">Name</th>
-            <th class="border p-2">Skill</th>
-            <th class="border p-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let resource of filteredResources()">
-            <td class="border p-2">{{ resource.name }}</td>
-            <td class="border p-2">{{ resource.skill }}</td>
-            <td class="border p-2">
-              <button (click)="editResource(resource)" class="text-yellow-600">Edit</button>
-              <button (click)="deleteResource(resource.id)" class="text-red-600 ml-2">Delete</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  `
+  standalone: true, // If using standalone components
+  imports: [CommonModule, FormsModule], // Add CommonModule and FormsModule here
+  templateUrl: './resource-list.component.html',
+  styleUrls: ['./resource-list.component.css'],
 })
-export class ResourceListComponent implements OnInit {
-  resources: any[] = [];
-  newResource = { name: '', skill: '' };
+export class ResourceListComponent {
+  resources: Resources[] = []; // Use 'Resources' instead of 'Resources'
+  newResource: Resources = { id: 0, name: '', role: '' }; // Use 'Resources' instead of 'Resources'
   searchTerm = '';
+  editingResource: Resources | null = null; // Use 'Resources' instead of 'Resources'
 
   constructor(private resourceService: ResourceService) {}
 
@@ -50,23 +24,39 @@ export class ResourceListComponent implements OnInit {
   }
 
   loadResources() {
-    this.resourceService.getResources().subscribe(data => this.resources = data);
+    this.resourceService.getResources().subscribe(
+      (data) => {
+        console.log('Fetched resources:', data); // Log fetched data for debugging
+        this.resources = data;
+      },
+      (error) => {
+        console.error('Error fetching resources:', error); // Log any errors
+      }
+    );
   }
 
   addResource() {
     this.resourceService.addResource(this.newResource).subscribe(() => {
-      this.newResource = { name: '', skill: '' };
-      this.loadResources();
+      this.newResource = { id: 0, name: '', role: '' }; // Reset form after submission
+      this.loadResources(); // Reload resources
     });
   }
 
-  editResource(resource: any) {
-    const updatedName = prompt('New name', resource.name);
-    const updatedSkill = prompt('New skill', resource.skill);
-    if (updatedName && updatedSkill) {
-      const updated = { ...resource, name: updatedName, skill: updatedSkill };
-      this.resourceService.updateResource(updated.id, updated).subscribe(() => this.loadResources());
+  editResource(resource: Resources) { // Use 'Resource' instead of 'Resources'
+    this.editingResource = { ...resource }; // Create a copy of the resource for editing
+  }
+
+  updateResource() {
+    if (this.editingResource) {
+      this.resourceService.updateResource(this.editingResource.id, this.editingResource).subscribe(() => {
+        this.loadResources(); // Reload resources
+        this.editingResource = null; // Reset the editing resource after update
+      });
     }
+  }
+
+  cancelEdit() {
+    this.editingResource = null; // Reset the editing resource when cancel is clicked
   }
 
   deleteResource(id: number) {
@@ -75,7 +65,12 @@ export class ResourceListComponent implements OnInit {
     }
   }
 
-  filteredResources() {
-    return this.resources.filter(r => r.name.toLowerCase().includes(this.searchTerm.toLowerCase()));
+  get filteredResources(): Resources[] { // Use 'Resource' instead of 'Resources'
+    const term = this.searchTerm.toLowerCase();
+    return this.resources.filter(
+      (r) =>
+        (r.name || '').toLowerCase().includes(term) ||
+        (r.role || '').toLowerCase().includes(term)
+    );
   }
 }

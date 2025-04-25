@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TimeSheetService } from '././services/TimeSheetService';
-import { TimeSheet } from '././model/TimeSheet';
+import { TimeSheetService } from '../../services/WorkTable.service';
+import { TimeSheet } from '../../model/timeSheet';
+
 
 
 @Component({

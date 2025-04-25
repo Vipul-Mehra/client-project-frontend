@@ -3,10 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ResourceService {
-  private baseUrl = 'http://localhost:8080/api/resources';
+  private baseUrl = 'http://localhost:8080/resources';
 
   constructor(private http: HttpClient) {}
 
