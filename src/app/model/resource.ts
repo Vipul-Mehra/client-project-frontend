@@ -1,5 +1,6 @@
-export interface Resources {
-  id: number;
-  name: string;
-  role: string;
+// src/app/model/resource.model.ts
+export interface Resource {
+  resourceId: number;
+  resourceName: string;
+  resourceRole: string;
 }

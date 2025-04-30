@@ -1,7 +1,12 @@
+// src/app/model/time-sheet.model.ts
 export interface TimeSheet {
-  workId: number;
-  resourceId: number;
-  clientProjectId: number;
+  timeSheetId?: number;
+  resourceId: number | null;
+  resourceName?: string;
+  resourceRole?: string;
+  clientProjectId: number | null;
+  projectName?: string;
+  clientName?: string;
   workDate: string;
-  hoursWorked: number;
+  hoursWorked: number | null;
 }

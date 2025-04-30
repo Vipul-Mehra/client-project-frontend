@@ -7,5 +7,5 @@ export const routes: Routes = [
   { path: 'clients', component: ClientListComponent },
    { path: 'resources', component: ResourceListComponent },
    { path: 'timesheets', component: TimeSheetComponent },
-  { path: '', redirectTo: 'workTable', pathMatch: 'full' }
+//   { path: '', redirectTo: 'timeSheets', pathMatch: 'full' }
 ];

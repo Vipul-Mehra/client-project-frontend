@@ -1,34 +1,100 @@
-<div>
-  <h2 class="text-xl font-bold mb-2">Work Table</h2>
+<div class="container">
+  <h2 class="text-xl font-bold mb-2">Time Sheet Management</h2>
 
-  <!-- Search Input -->
-  <label>
-    <input [(ngModel)]="searchTerm" placeholder="Search clients..." class="p-2 border mb-4 w-full" />
-  </label>
+  <!-- Search Inputs -->
+  <div class="mb-3">
+    <label>Search:
+      <input [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" />
+    </label>
 
-  <!-- Table -->
-  <table class="w-full border">
+    <label>From:
+      <input type="date" [(ngModel)]="startDate" (ngModelChange)="applyFilters()" />
+    </label>
+
+    <label>To:
+      <input type="date" [(ngModel)]="endDate" (ngModelChange)="applyFilters()" />
+    </label>
+  </div>
+
+  <!-- Add TimeSheet Form -->
+  <form (ngSubmit)="addTimeSheet()" class="mb-3 d-flex gap-2">
+    <select [(ngModel)]="newTimeSheet.resourceId" name="resourceId" required class="form-control">
+      <option value="" disabled>Select Resource</option>
+      <option *ngFor="let r of resources" [value]="r.id">{{ r.name }}</option>
+    </select>
+
+    <select [(ngModel)]="newTimeSheet.clientProjectId" name="clientProjectId" required class="form-control">
+      <option value="" disabled>Select Client Project</option>
+      <option *ngFor="let p of clientProjects" [value]="p.id">{{ p.label }}</option>
+    </select>
+
+    <input type="date" [(ngModel)]="newTimeSheet.workDate" name="workDate" required class="form-control" />
+    <input type="number" [(ngModel)]="newTimeSheet.hoursWorked" name="hoursWorked" placeholder="Hours Worked" required class="form-control" />
+
+    <button type="submit" class="btn btn-primary">Add Time Sheet</button>
+  </form>
+
+  <!-- TimeSheet Table -->
+  <table class="table table-bordered">
     <thead>
     <tr>
-      <th class="border p-2">Resource ID</th>
-      <th class="border p-2">Client Project ID</th>
-      <th class="border p-2">Work Date</th>
-      <th class="border p-2">Hours Worked</th>
-      <th class="border p-2">Actions</th>
+      <th>ID</th>
+      <th>Resource</th>
+      <th>Client</th>
+      <th>Project</th>
+      <th>Work Date</th>
+      <th>Hours Worked</th>
+      <th>Actions</th>
     </tr>
     </thead>
     <tbody>
-    <!-- Loop through filtered clients -->
-    <tr *ngFor="let work of filteredWorkTimetables">
-    <td>{{ work.resourceId }}</td>
-      <td>{{ work.clientProjectId }}</td>
-      <td>{{ work.workDate | date: 'yyyy-MM-dd' }}</td>
-      <td>{{ work.hoursWorked }}</td>
+    <tr *ngFor="let timeSheet of filteredWorkTimetables">
+      <td>{{ timeSheet.timeSheetId }}</td>
+      <td>{{ timeSheet.resourceName }}</td>
+      <td>{{ timeSheet.clientName }}</td>
+      <td>{{ timeSheet.projectName }}</td>
+      <td>{{ timeSheet.workDate }}</td>
+      <td>{{ timeSheet.hoursWorked }}</td>
       <td>
-        <!-- Edit Button -->
-        <button (click)="editClient(work)" class="text-yellow-600">Edit</button>
-        <!-- Delete Button -->
-        <button (click)="deleteClient(work.workId)" class="text-red-600 ml-2">Delete</button>
+        <button (click)="startEdit(timeSheet)" *ngIf="!editingTimeSheet || editingTimeSheet.timeSheetId !== timeSheet.timeSheetId" class="btn btn-sm btn-warning">
+          Edit
+        </button>
+        <button (click)="deleteTimeSheet(timeSheet.timeSheetId)" class="btn btn-sm btn-danger">Delete</button>
+      </td>
+    </tr>
+
+    <!-- Editing Row -->
+    <tr *ngIf="editingTimeSheet">
+      <td colspan="7">
+        <h4>Edit Time Sheet</h4>
+        <form (ngSubmit)="updateTimeSheet()">
+          <div class="row mb-2">
+            <label class="col-2 col-form-label">Resource ID:</label>
+            <div class="col-4">
+              <input type="number" [(ngModel)]="editingTimeSheet.resourceId" name="resourceId" required class="form-control" />
+            </div>
+          </div>
+          <div class="row mb-2">
+            <label class="col-2 col-form-label">Client Project ID:</label>
+            <div class="col-4">
+              <input type="number" [(ngModel)]="editingTimeSheet.clientProjectId" name="clientProjectId" required class="form-control" />
+            </div>
+          </div>
+          <div class="row mb-2">
+            <label class="col-2 col-form-label">Work Date:</label>
+            <div class="col-4">
+              <input type="date" [(ngModel)]="editingTimeSheet.workDate" name="workDate" required class="form-control" />
+            </div>
+          </div>
+          <div class="row mb-2">
+            <label class="col-2 col-form-label">Hours Worked:</label>
+            <div class="col-4">
+              <input type="number" [(ngModel)]="editingTimeSheet.hoursWorked" name="hoursWorked" required class="form-control" />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-success me-2">Update</button>
+          <button type="button" (click)="cancelEdit()" class="btn btn-secondary">Cancel</button>
+        </form>
       </td>
     </tr>
     </tbody>

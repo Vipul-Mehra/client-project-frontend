@@ -1,13 +1,13 @@
 <div>
   <h2 class="text-xl font-bold mb-2">Clients</h2>
 
-  <input [(ngModel)]="searchTerm" placeholder="Search clients..." class="p-2 border mb-4 w-full" />
+  <input [(ngModel)]="searchTerm" placeholder="Search clients..." class="searchInput" />
 
   <form (submit)="addClient()" class="flex gap-2 mb-4">
     <input [(ngModel)]="newClient.clientName" name="clientName" placeholder="Client Name" class="p-2 border" required />
     <input [(ngModel)]="newClient.clientEmail" name="clientEmail" type="email" placeholder="Email" class="p-2 border"
       required />
-    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Add</button>
+    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Add Clients</button>
   </form>
 
   <table class="w-full border">
@@ -23,8 +23,8 @@
         <td class="border p-2">{{ client.clientName || 'N/A' }}</td>
         <td class="border p-2">{{ client.clientEmail || 'N/A' }}</td>
         <td class="border p-2">
-          <button (click)="editClient(client)" class="text-yellow-600">Edit</button>
-          <button (click)="deleteClient(client.clientId)" class="text-red-600 ml-2">Delete</button>
+          <button (click)="editClient(client)" >Edit</button>
+          <button (click)="deleteClient(client.clientId)" >Delete</button>
         </td>
       </tr>
     </tbody>

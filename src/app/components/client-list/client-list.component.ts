@@ -13,7 +13,8 @@ interface Client {
   selector: 'app-client-list',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './client-list.component.html' // ✅ point to external HTML file
+  templateUrl: './client-list.component.html', // ✅ point to external HTML file
+ styleUrls: ['./client-list.component.css']
 })
 export class ClientListComponent implements OnInit {
   clients: Client[] = [];
