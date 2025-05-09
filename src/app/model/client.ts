@@ -1,5 +1,5 @@
 export interface Client {
-  Id: number;
+  id: number; // NOT clientId
   clientName: string;
   clientEmail: string;
 }

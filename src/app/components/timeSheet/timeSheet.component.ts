@@ -115,7 +115,7 @@ export class TimeSheetComponent implements OnInit {
 
   loadClients(): void {
     this.clientService.getClients().subscribe((clients: Client[]) => {
-      this.clients = clients.map(client => ({ ...client, Id: client.Id }));
+      this.clients = clients.map(c => ({ ...c, id: c.id }));
       console.log('Clients Array:', this.clients);
     });
   }
@@ -131,11 +131,11 @@ export class TimeSheetComponent implements OnInit {
     this.filteredProjects = [];
     if (!clientId) return;
 
-    this.selectedClient = this.clients.find(c => c.Id === clientId) || null;
+    this.selectedClient = this.clients.find(c => c.id === clientId) || null;
 
     this.clientProjectService.getAllClientProjects().subscribe((clientProjects: ClientProject[]) => {
       this.filteredProjects = clientProjects
-        .filter(cp => cp.client?.Id === clientId)
+        .filter(cp => cp.client?.id === clientId)
         .map(cp => cp.project);
 
       console.log('Filtered Projects:', this.filteredProjects);
@@ -201,8 +201,8 @@ export class TimeSheetComponent implements OnInit {
     this.editWorkDate = timetable.workDate;
     this.editHoursWorked = timetable.hoursWorked;
 
-    if (this.editingTimeSheet.clientProject?.client?.Id) {
-      this.loadClientProjects(this.editingTimeSheet.clientProject.client.Id);
+    if (this.editingTimeSheet.clientProject?.client?.id) {
+      this.loadClientProjects(this.editingTimeSheet.clientProject.client.id);
       this.selectedProject = this.filteredProjects.find(p => p.projectId === this.editingTimeSheet?.clientProject?.project?.projectId) || null;
     }
   }

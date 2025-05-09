@@ -1,14 +1,11 @@
 <div class="container mt-4">
   <h2>Time Sheet Management</h2>
-
-  <!-- Add Time Sheet Button -->
   <div class="mb-3">
     <button class="btn btn-primary" (click)="resetForm()" data-bs-toggle="modal" data-bs-target="#addTimeSheetModal">
       Add New Time Sheet
     </button>
   </div>
 
-  <!-- Date & Search Filters -->
   <div class="row mb-3">
     <div class="col-md-3">
       <label for="startDate" class="form-label">Start Date:</label>
@@ -20,14 +17,8 @@
     </div>
     <div class="col-md-4">
       <label for="searchTerm" class="form-label">Search:</label>
-      <input
-        type="text"
-        id="searchTerm"
-        class="form-control"
-        [(ngModel)]="searchTerm"
-        (ngModelChange)="applyFilters()"
-        placeholder="Search by Resource, Project, Client"
-      />
+      <input type="text" id="searchTerm" class="form-control" [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()"
+             placeholder="Search by Resource, Project, Client" />
     </div>
   </div>
 
@@ -36,10 +27,11 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addTimeSheetModalLabel">Add New Time Sheet</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">close</button>
         </div>
         <div class="modal-body">
+          <h5 class="modal-title" id="addTimeSheetModalLabel">Add New Time Sheet</h5>
           <form #addForm="ngForm" (ngSubmit)="addTimeSheet()" novalidate>
             <div class="mb-3">
               <label for="resourceId" class="form-label">Resource:</label>
@@ -52,6 +44,7 @@
             <div class="mb-3">
               <label for="clientId" class="form-label">Client:</label>
               <select
+                *ngIf="clients && clients.length > 0"
                 [(ngModel)]="newTimeSheet.clientId"
                 name="clientId"
                 (change)="onClientSelect($event)"
@@ -59,23 +52,19 @@
                 class="form-control"
               >
                 <option value="" disabled>Select Client</option>
-                <option *ngFor="let client of clients" [value]="client.Id">{{ client.clientName }}</option>
+                <option *ngFor="let client of clients" [value]="client.id">{{ client.clientName }}</option>
+              </select>
+              <select *ngIf="!clients || clients.length === 0" class="form-control" disabled>
+                <option>Loading Clients...</option>
               </select>
             </div>
 
             <div class="mb-3">
               <label for="clientProjectId" class="form-label">Project:</label>
-              <select
-                [(ngModel)]="newTimeSheet.clientProjectId"
-                name="clientProjectId"
-                required
-                class="form-control"
-                [disabled]="!newTimeSheet.clientId || filteredProjects.length === 0"
-              >
+              <select [(ngModel)]="newTimeSheet.clientProjectId" name="clientProjectId" required class="form-control"
+                      [disabled]="!newTimeSheet.clientId || filteredProjects.length === 0">
                 <option value="" disabled>Select Project</option>
-                <option *ngFor="let project of filteredProjects" [value]="project.projectId">
-                  {{ project.projectName }}
-                </option>
+                <option *ngFor="let project of filteredProjects" [value]="project.projectId">{{ project.projectName }}</option>
                 <option *ngIf="newTimeSheet.clientId && filteredProjects.length === 0">
                   No projects for selected client
                 </option>
@@ -84,30 +73,15 @@
 
             <div class="mb-3">
               <label for="workDate" class="form-label">Work Date:</label>
-              <input
-                type="date"
-                id="workDate"
-                class="form-control"
-                [(ngModel)]="newTimeSheet.workDate"
-                name="workDate"
-                required
-              />
+              <input type="date" id="workDate" class="form-control" [(ngModel)]="newTimeSheet.workDate" name="workDate" required />
             </div>
 
             <div class="mb-3">
               <label for="hoursWorked" class="form-label">Hours Worked:</label>
-              <input
-                type="number"
-                id="hoursWorked"
-                class="form-control"
-                [(ngModel)]="newTimeSheet.hoursWorked"
-                name="hoursWorked"
-                required
-              />
+              <input type="number" id="hoursWorked" class="form-control" [(ngModel)]="newTimeSheet.hoursWorked" name="hoursWorked" required />
             </div>
 
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
               <button type="submit" class="btn btn-primary" [disabled]="addForm.invalid">Save</button>
             </div>
           </form>
@@ -116,7 +90,7 @@
     </div>
   </div>
 
-  <!-- Table: Time Sheets -->
+  <!-- Table -->
   <table class="table table-striped">
     <thead>
     <tr>
@@ -136,15 +110,12 @@
       <td>{{ timeSheet.clientProject?.project?.projectName }}</td>
       <td>{{ timeSheet.hoursWorked }}</td>
       <td>
-        <button
-          class="btn btn-sm btn-warning me-2"
-          (click)="startEdit(timeSheet)"
-          data-bs-toggle="modal"
-          data-bs-target="#editTimeSheetModal"
-        >
+        <button class="btn btn-sm btn-warning me-2" (click)="startEdit(timeSheet)" data-bs-toggle="modal" data-bs-target="#editTimeSheetModal">
           Edit
         </button>
-        <button class="btn btn-sm btn-danger" (click)="deleteTimeSheet(timeSheet.timeSheetId)">Delete</button>
+        <button class="btn btn-sm btn-danger" (click)="deleteTimeSheet(timeSheet.timeSheetId)">
+          Delete
+        </button>
       </td>
     </tr>
     <tr *ngIf="filteredWorkTimetables.length === 0">
@@ -153,81 +124,4 @@
     </tbody>
   </table>
 
-  <!-- Modal: Edit Time Sheet -->
-  <div class="modal fade" id="editTimeSheetModal" tabindex="-1" aria-labelledby="editTimeSheetModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editTimeSheetModalLabel">Edit Time Sheet</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form #editForm="ngForm" (ngSubmit)="updateTimeSheet()" novalidate>
-            <div class="mb-3">
-              <label for="editResourceId" class="form-label">Resource:</label>
-              <select [(ngModel)]="editResourceId" name="editResourceId" required class="form-control" disabled>
-                <option *ngFor="let r of resources" [value]="r.resourceId">{{ r.resourceName }}</option>
-              </select>
-            </div>
 
-            <div class="mb-3">
-              <label for="editClientId" class="form-label">Client:</label>
-              <select
-                [(ngModel)]="editClientId"
-                name="editClientId"
-                (change)="onClientSelect($event)"
-                required
-                class="form-control"
-                disabled
-              >
-                <option *ngFor="let client of clients" [value]="client.Id">{{ client.clientName }}</option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label for="editProjectId" class="form-label">Project:</label>
-              <select
-                [(ngModel)]="editProjectId"
-                name="editProjectId"
-                (change)="onProjectChange($event)"
-                required
-                class="form-control"
-              >
-                <option *ngFor="let project of filteredProjects" [value]="project.projectId">{{ project.projectName }}</option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label for="editWorkDate" class="form-label">Work Date:</label>
-              <input
-                type="date"
-                id="editWorkDate"
-                class="form-control"
-                [(ngModel)]="editWorkDate"
-                name="editWorkDate"
-                required
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="editHoursWorked" class="form-label">Hours Worked:</label>
-              <input
-                type="number"
-                id="editHoursWorked"
-                class="form-control"
-                [(ngModel)]="editHoursWorked"
-                name="editHoursWorked"
-                required
-              />
-            </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-success" [disabled]="editForm.invalid">Update</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
