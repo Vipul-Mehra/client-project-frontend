@@ -8,7 +8,7 @@ import { Resource } from '../model/resource';
   providedIn: 'root'
 })
 export class ResourceService {
-  private apiUrl = 'http://localhost:8080/resources'; // Replace with your backend URL
+  private apiUrl = 'http://localhost:8080/resources'; // Replace with your backend uel
 
   constructor(private http: HttpClient) {}
 

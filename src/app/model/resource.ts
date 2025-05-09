@@ -4,3 +4,4 @@ export interface Resource {
   resourceName: string;
   resourceRole: string;
 }
+

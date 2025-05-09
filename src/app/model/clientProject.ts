@@ -1,5 +1,9 @@
+import { Client } from './client';
+import { Project } from './projects';
+
+
 export interface ClientProject {
   clientProjectId: number;
-  clientName: string;
-  projectName: string;
+  client: Client;
+  project: Project;
 }

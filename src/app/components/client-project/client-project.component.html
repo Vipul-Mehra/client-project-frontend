@@ -1,0 +1,42 @@
+<div class="container">
+  <h2>Client Projects</h2>
+
+  <h3>Add New Client Project</h3>
+  <form (ngSubmit)="addClientProject()" class="mb-3 d-flex gap-2">
+    <select [(ngModel)]="newClientProject.client" name="clientId" class="form-control" required>
+      <option [ngValue]="null" disabled>Select Client</option>
+      <option *ngFor="let client of clients" [ngValue]="client">{{ client.clientId }} - {{ client.clientName }}</option>
+    </select>
+    <select [(ngModel)]="newClientProject.projectId" name="projectId" class="form-control" required>
+      <option [ngValue]="null" disabled>Select Project</option>
+      <option *ngFor="let project of projects" [ngValue]="project">{{ project.projectId }} - {{ project.projectName }}</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Add Client Project</button>
+  </form>
+
+  <h3>Client Project List</h3>
+  <table class="table table-striped">
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Client ID</th>
+      <th>Client Name</th>
+      <th>Project ID</th>
+      <th>Project Name</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let cp of clientProjects">
+      <td>{{ cp.clientProjectId }}</td>
+      <td>{{ cp.client?.clientId }}</td>
+      <td>{{ cp.client?.clientName }}</td>
+      <td>{{ cp.projectId?.projectId }}</td>
+      <td>{{ cp.projectId?.projectName }}</td>
+      <td>
+        <button (click)="deleteClientProject(cp.clientProjectId)" class="btn btn-sm btn-danger">Delete</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
