@@ -5,4 +5,7 @@ export interface ClientProject {
   clientProjectId: number;
   client: Client;
   project: Project;
+  clientId?: number;
+    projectId?: number;
 }
+

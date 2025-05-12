@@ -22,7 +22,6 @@
     </div>
   </div>
 
-  <!-- Modal: Add Time Sheet -->
   <div class="modal fade" id="addTimeSheetModal" tabindex="-1" aria-labelledby="addTimeSheetModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -33,6 +32,7 @@
         <div class="modal-body">
           <h5 class="modal-title" id="addTimeSheetModalLabel">Add New Time Sheet</h5>
           <form #addForm="ngForm" (ngSubmit)="addTimeSheet()" novalidate>
+
             <div class="mb-3">
               <label for="resourceId" class="form-label">Resource:</label>
               <select [(ngModel)]="newTimeSheet.resourceId" name="resourceId" required class="form-control">
@@ -62,7 +62,7 @@
             <div class="mb-3">
               <label for="clientProjectId" class="form-label">Project:</label>
               <select [(ngModel)]="newTimeSheet.clientProjectId" name="clientProjectId" required class="form-control"
-                      [disabled]="!newTimeSheet.clientId || filteredProjects.length === 0">
+                      [disabled]="!newTimeSheet.clientId || filteredProjects.length === 0" (change)="onProjectChange($event)">
                 <option value="" disabled>Select Project</option>
                 <option *ngFor="let project of filteredProjects" [value]="project.projectId">{{ project.projectName }}</option>
                 <option *ngIf="newTimeSheet.clientId && filteredProjects.length === 0">
@@ -83,6 +83,8 @@
 
             <div class="modal-footer">
               <button type="submit" class="btn btn-primary" [disabled]="addForm.invalid">Save</button>
+
+
             </div>
           </form>
         </div>
@@ -90,7 +92,6 @@
     </div>
   </div>
 
-  <!-- Table -->
   <table class="table table-striped">
     <thead>
     <tr>

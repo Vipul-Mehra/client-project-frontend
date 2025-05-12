@@ -1,15 +1,14 @@
 // 1. src/app/services/client-project.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ClientProject } from '../model/clientProject';
-
 
 @Injectable({
   providedIn: 'root'
 })
 export class ClientProjectService {
-  private apiUrl = 'http://localhost:8080/clientprojects'; // Adjust if your backend runs on a different port or URL
+  private apiUrl = 'http://localhost:8080/clientprojects';
 
   constructor(private http: HttpClient) { }
 
@@ -19,6 +18,14 @@ export class ClientProjectService {
 
   getClientProjectById(id: number): Observable<ClientProject> {
     return this.http.get<ClientProject>(`${this.apiUrl}/${id}`);
+  }
+
+  // Add this method
+  getClientProjectByClientAndProject(clientId: number, projectId: number): Observable<ClientProject> {
+    const params = new HttpParams()
+      .set('clientId', clientId)
+      .set('projectId', projectId);
+    return this.http.get<ClientProject>(`${this.apiUrl}/byClientAndProject`, { params });
   }
 
   createClientProject(clientProject: ClientProject): Observable<ClientProject> {
