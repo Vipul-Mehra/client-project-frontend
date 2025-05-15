@@ -1,19 +1,23 @@
+// src/app/services/resource.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Resource } from '../model/resource';
 
-
 @Injectable({
   providedIn: 'root'
 })
 export class ResourceService {
-  private apiUrl = 'http://localhost:8080/resources'; // Replace with your backend uel
+  private apiUrl = 'http://localhost:8080/resources'; // Replace with your backend URL
 
   constructor(private http: HttpClient) {}
 
   getResources(): Observable<Resource[]> {
     return this.http.get<Resource[]>(this.apiUrl);
+  }
+
+  getResourceById(id: number): Observable<Resource> {
+    return this.http.get<Resource>(`${this.apiUrl}/${id}`);
   }
 
   addResource(resource: Resource): Observable<Resource> {

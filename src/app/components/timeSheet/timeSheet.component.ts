@@ -1,10 +1,9 @@
-// src/app/components/timeSheet/timeSheet.component.ts
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-// import bootstrap1 from '../../../main.server';
-import * as bootstrap from 'bootstrap';
-import { Modal } from 'bootstrap';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
 // Models
 import { TimeSheet } from '../../model/timeSheet';
 import { Resource } from '../../model/resource';
@@ -15,10 +14,9 @@ import { ClientProject } from '../../model/clientProject';
 // Services
 import { TimeSheetService } from '../../services/timeSheet.service';
 import { ResourceService } from '../../services/resource.service';
-// import { ClientService } from '../../services/clientService';
-import { ClientProjectService } from '../../services/clientProject.service';
-import { ProjectService } from '../../services/projectService';
 import { ClientService } from '../../services/clientService';
+import { ProjectService } from '../../services/projectService';
+import { ClientProjectService } from '../../services/clientProject.service';
 
 @Component({
   selector: 'app-time-sheet',
@@ -28,12 +26,12 @@ import { ClientService } from '../../services/clientService';
   imports: [CommonModule, FormsModule],
 })
 export class TimeSheetComponent implements OnInit {
-  // Filters
+  // Filter fields
   startDate: string = '';
   endDate: string = '';
   searchTerm: string = '';
 
-  // Data
+  // Data lists
   workTimetables: TimeSheet[] = [];
   filteredWorkTimetables: TimeSheet[] = [];
   resources: Resource[] = [];
@@ -41,6 +39,7 @@ export class TimeSheetComponent implements OnInit {
   projects: Project[] = [];
   filteredProjects: Project[] = [];
 
+  // Form model for create
   newTimeSheet = {
     resourceId: null as number | null,
     clientId: null as number | null,
@@ -49,11 +48,14 @@ export class TimeSheetComponent implements OnInit {
     hoursWorked: null as number | null,
   };
 
+  // For editing
   editingTimeSheet: TimeSheet | null = null;
   selectedClient: Client | null = null;
   selectedProject: Project | null = null;
+  editingClientId: number | null = null;
 
   constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
     private timeSheetService: TimeSheetService,
     private resourceService: ResourceService,
     private clientService: ClientService,
@@ -62,237 +64,194 @@ export class TimeSheetComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadWorkTables();
     this.loadResources();
     this.loadClients();
     this.loadProjects();
+    this.loadWorkTables();
   }
 
   applyFilters(): void {
-    let filteredData = [...this.workTimetables];
+    let data = [...this.workTimetables];
     const term = this.searchTerm.trim().toLowerCase();
 
     if (term) {
-      filteredData = filteredData.filter((item) =>
-        item.resourceId?.toString().toLowerCase().includes(term) ||
-        item.clientProject?.project?.projectName?.toLowerCase().includes(term) ||
-        item.clientProject?.client?.clientName?.toLowerCase().includes(term)
+      data = data.filter((item) =>
+        item.resourceId?.toString().includes(term) ||
+        item.clientProject?.client?.clientName?.toLowerCase().includes(term) ||
+        item.clientProject?.project?.projectName?.toLowerCase().includes(term)
       );
     }
 
     if (this.startDate || this.endDate) {
       const start = this.startDate ? new Date(this.startDate) : null;
       const end = this.endDate ? new Date(this.endDate) : null;
-      filteredData = filteredData.filter((item) => {
+
+      data = data.filter((item) => {
         const itemDate = new Date(item.workDate);
-        return (
-          (!start || itemDate >= start!) &&
-          (!end || itemDate <= end!)
-        );
+        return (!start || itemDate >= start) && (!end || itemDate <= end);
       });
     }
 
-    this.filteredWorkTimetables = filteredData;
+    this.filteredWorkTimetables = data;
   }
 
- loadWorkTables(): void {
-   this.timeSheetService.getTimeSheets().subscribe({
-     next: (data: TimeSheet[]) => {
-       this.workTimetables = []; // Clear existing data
-       data.forEach(timeSheet => {
-         if (timeSheet.clientProjectId) {
-           this.clientProjectService.getClientProjectById(timeSheet.clientProjectId).subscribe(clientProject => {
-             this.workTimetables.push({ ...timeSheet, clientProject });
-             this.applyFilters(); // Apply filters after all data is loaded (or update as you go)
+  loadWorkTables(): void {
+     this.timeSheetService.getTimeSheets().subscribe({
+       next: (data: TimeSheet[]) => {
+         this.workTimetables = [];
+         data.forEach(timeSheet => {
+           forkJoin({
+             clientProject: timeSheet.clientProjectId
+               ? this.clientProjectService.getClientProjectById(timeSheet.clientProjectId).pipe(catchError(() => of(undefined)))
+               : of(undefined),
+             resource: timeSheet.resourceId
+               ? this.resourceService.getResourceById(timeSheet.resourceId).pipe(
+                   catchError(error => {
+                     console.error('Error fetching resource:', error);
+                     return of(undefined); // Changed null to undefined here
+                   })
+                 )
+               : of(undefined), // And here
+           }).subscribe(({ clientProject, resource }) => {
+             this.workTimetables.push({ ...timeSheet, clientProject, resource });
+             this.applyFilters();
            });
-         } else {
-           this.workTimetables.push(timeSheet);
-           this.applyFilters();
-         }
-       });
-     },
-     error: () => alert('Failed to load time sheets.'),
-   });
- }
+         });
+       },
+       error: () => alert('Failed to load time sheets.')
+     });
+   }
+
 
   loadResources(): void {
-    this.resourceService.getResources().subscribe((resources: Resource[]) => {
-      this.resources = resources;
-    });
+    this.resourceService.getResources().subscribe((res) => this.resources = res);
   }
 
   loadClients(): void {
-    this.clientService.getClients().subscribe((clients: Client[]) => {
-      this.clients = clients.map(c => ({ ...c, id: c.id }));
-    });
+    this.clientService.getClients().subscribe((res) => this.clients = res);
   }
 
   loadProjects(): void {
-    this.projectService.getAllProjects().subscribe((projects: Project[]) => {
-      this.projects = projects;
-    });
+    this.projectService.getAllProjects().subscribe((res) => this.projects = res);
   }
 
   loadClientProjects(clientId: number | null): void {
-    this.filteredProjects = [];
     if (!clientId) return;
 
     this.selectedClient = this.clients.find(c => c.id === clientId) || null;
+    this.newTimeSheet.clientProjectId = null;
+    this.selectedProject = null;
+    this.filteredProjects = [];
 
-    this.clientProjectService.getAllClientProjects().subscribe((clientProjects: ClientProject[]) => {
+    this.clientProjectService.getAllClientProjects().subscribe((clientProjects) => {
       this.filteredProjects = clientProjects
         .filter(cp => cp.client?.id === clientId)
         .map(cp => cp.project);
     });
-
-    this.newTimeSheet.clientProjectId = null;
-    this.selectedProject = null;
   }
 
   onClientSelect(event: Event): void {
     const target = event.target as HTMLSelectElement;
-    const selectedValue = target.value;
-    const selectedClientId = selectedValue ? parseInt(selectedValue, 10) : null;
-
-    this.newTimeSheet.clientId = selectedClientId;
-    this.loadClientProjects(selectedClientId);
+    const clientId = Number(target.value);
+    this.newTimeSheet.clientId = clientId;
+    this.loadClientProjects(clientId);
   }
 
-  onProjectChange(event: Event): void {
-    console.log('onProjectChange triggered');
-    const target = event.target as HTMLSelectElement;
-    const projectId = Number(target.value);
-
+  onProjectChangeEdit(event: Event): void {
+    const projectId = Number((event.target as HTMLSelectElement).value);
     this.selectedProject = this.filteredProjects.find(p => p.projectId === projectId) || null;
-
-    if (this.selectedClient && this.selectedProject) {
+    if (this.editingClientId && this.selectedProject && this.editingTimeSheet) {
       this.clientProjectService.getAllClientProjects().subscribe(clientProjects => {
-        console.log('Fetched clientProjects:', clientProjects);
-        const foundClientProject = clientProjects.find(
-          cp => cp.client?.id === this.selectedClient?.id && cp.project?.projectId === this.selectedProject?.projectId
+        const cp = clientProjects.find(cp =>
+          cp.client?.id === this.editingClientId &&
+          cp.project?.projectId === this.selectedProject?.projectId
         );
-        if (foundClientProject) {
-          this.newTimeSheet.clientProjectId = foundClientProject.clientProjectId;
-          console.log('clientProjectId set to:', this.newTimeSheet.clientProjectId);
-        } else {
-          this.newTimeSheet.clientProjectId = null;
-          alert('Error: Could not find the Client Project for the selected Client and Project.');
-        }
+        this.editingTimeSheet!.clientProjectId = cp?.clientProjectId ?? null;
+        if (!cp) alert('Client-Project mapping not found for edit.');
       });
-    } else {
-      this.newTimeSheet.clientProjectId = null;
+    } else if (this.editingTimeSheet) {
+      this.editingTimeSheet.clientProjectId = null;
+      this.selectedProject = null;
     }
   }
 
-addTimeSheet(): void {
-  console.log('newTimeSheet before add:', this.newTimeSheet);
-  const { resourceId, workDate, hoursWorked, clientProjectId } = this.newTimeSheet;
+  addTimeSheet(): void {
+    const { resourceId, workDate, hoursWorked, clientProjectId } = this.newTimeSheet;
+    if (!resourceId || !clientProjectId || !workDate || hoursWorked === null) {
+      alert('All fields are required.');
+      return;
+    }
 
-  if (!resourceId || !clientProjectId || !workDate || hoursWorked === null) {
-    alert('All fields are required!');
-    return;
-  }
+    const payload: Omit<TimeSheet, 'timeSheetId'> = {
+      resourceId,
+      clientProjectId,
+      workDate,
+      hoursWorked,
+    };
 
-  const payload: Omit<TimeSheet, 'timeSheetId'> = {
-    resourceId,
-    clientProjectId: clientProjectId, // Now this should be a valid property of TimeSheet
-    workDate,
-    hoursWorked,
-  };
-
-  this.timeSheetService.addTimeSheet(payload).subscribe({
-    next: (saved: TimeSheet) => {
-      this.workTimetables.push(saved);
-      this.applyFilters();
-      this.resetForm();
-    },
-    error: (err) => {
-      console.error('Error adding time sheet', err);
-      alert('Failed to add time sheet.');
-    },
-  });
-}
-
- startEdit(timeSheet: TimeSheet): void {
-   this.editingTimeSheet = { ...timeSheet };
-   if (this.editingTimeSheet.clientProjectId) {
-     this.clientProjectService.getClientProjectById(this.editingTimeSheet.clientProjectId).subscribe(cp => {
-       this.selectedClient = cp.client || null;
-       this.selectedProject = cp.project || null;
-       this.loadClientProjects(this.selectedClient?.id || null);
-     });
-   }
-
-   const modalElement = document.getElementById('editTimeSheetModal');
-   if (modalElement) {
-     const editModal = new bootstrap.Modal(modalElement);
-     editModal.show();
-   } else {
-     console.error('Modal element not found');
-   }
- }
-
- cancelEdit(): void {
-   this.editingTimeSheet = null;
-   this.selectedClient = null;
-   this.selectedProject = null;
-
-   const modalElement = document.getElementById('editTimeSheetModal');
-   if (modalElement) {
-     const editModal = bootstrap.Modal.getInstance(modalElement);
-     if (editModal) {
-       editModal.hide();
-     }
-   } else {
-     console.error('Modal element not found');
-   }
- }
-updateTimeSheet(): void { // Removed the timeSheetId argument here
-  if (!this.editingTimeSheet?.timeSheetId) return;
-
-  const { resourceId, workDate, hoursWorked } = this.editingTimeSheet;
-  const clientProjectId = this.editingTimeSheet.clientProjectId; // Use the direct clientProjectId
-
-  if (!resourceId || !clientProjectId || !workDate || hoursWorked === null || !this.selectedClient || !this.selectedProject) {
-    alert('All fields are required!');
-    return;
-  }
-
-  const payload: TimeSheet = {
-    timeSheetId: this.editingTimeSheet.timeSheetId,
-    resourceId,
-    clientProjectId: clientProjectId, // Send clientProjectId directly
-    workDate,
-    hoursWorked,
-    // Do not include client and project objects directly if your backend expects clientProjectId
-    // clientProject: {
-    //   clientProjectId: clientProjectId,
-    //   client: this.selectedClient,
-    //   project: this.selectedProject,
-    // },
-  };
-
-  this.timeSheetService.updateTimeSheet(this.editingTimeSheet.timeSheetId, payload).subscribe({
-    next: () => {
-      this.loadWorkTables();
-      this.cancelEdit();
-    },
-    error: (err) => {
-      alert('Failed to update time sheet');
-      console.error('Update error:', err);
-    },
-  });
-}
-
-  deleteTimeSheet(id: number | undefined): void {
-    if (!id) return;
-    if (confirm('Are you sure you want to delete this entry?')) {
-      this.timeSheetService.deleteTimeSheet(id).subscribe(() => {
+    this.timeSheetService.addTimeSheet(payload).subscribe({
+      next: (saved) => {
         this.loadWorkTables();
+        this.resetForm();
+        this.closeModal('addTimeSheetModal'); // Close add modal
+      },
+      error: () => alert('Failed to add time sheet.'),
+    });
+  }
+
+  startEdit(timeSheet: TimeSheet): void {
+    this.editingTimeSheet = { ...timeSheet };
+    if (this.editingTimeSheet.clientProjectId) {
+      this.clientProjectService.getClientProjectById(this.editingTimeSheet.clientProjectId).subscribe(cp => {
+        this.editingClientId = cp.client?.id || null;
+        this.selectedClient = cp.client;
+        this.selectedProject = cp.project;
+        this.loadClientProjects(this.editingClientId);
       });
     }
   }
 
+  cancelEdit(): void {
+    this.editingTimeSheet = null;
+    this.editingClientId = null;
+    this.selectedClient = null;
+    this.selectedProject = null;
+  }
+
+  updateTimeSheet(): void {
+    if (!this.editingTimeSheet?.timeSheetId) return;
+
+    const { resourceId, workDate, hoursWorked } = this.editingTimeSheet;
+    const clientProjectId = this.editingTimeSheet.clientProjectId;
+
+    if (!resourceId || !clientProjectId || !workDate || hoursWorked === null) {
+      alert('All fields are required!');
+      return;
+    }
+
+    this.timeSheetService.updateTimeSheet(this.editingTimeSheet.timeSheetId, {
+      resourceId,
+      clientProjectId,
+      workDate,
+      hoursWorked,
+    }).subscribe({
+      next: () => {
+        this.loadWorkTables();
+        this.cancelEdit();
+        this.closeModal('editTimeSheetModal'); // Close edit modal
+      },
+      error: (err) => {
+        alert('Failed to update time sheet');
+      },
+    });
+  }
+
+  deleteTimeSheet(id?: number): void {
+    if (!id || !confirm('Are you sure you want to delete this entry?')) return;
+    this.timeSheetService.deleteTimeSheet(id).subscribe(() => {
+      this.loadWorkTables();
+    });
+  }
 
   resetForm(): void {
     this.newTimeSheet = {
@@ -305,5 +264,29 @@ updateTimeSheet(): void { // Removed the timeSheetId argument here
     this.filteredProjects = [];
     this.selectedClient = null;
     this.selectedProject = null;
+  }
+
+  closeModal(modalId: string): void {
+    const modalElement = document.getElementById(modalId);
+    if (modalElement) {
+      modalElement.classList.remove('show');
+      modalElement.setAttribute('aria-hidden', 'true');
+      modalElement.setAttribute('style', 'display: none;');
+      const modalBackdrop = document.querySelector('.modal-backdrop');
+      if (modalBackdrop) {
+        modalBackdrop.remove();
+      }
+      document.body.style.overflow = '';
+    }
+  }
+
+  onClientSelectEdit(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const clientId = Number(target.value);
+    this.editingClientId = clientId;
+    this.loadClientProjects(clientId);
+    if (this.editingTimeSheet) {
+      this.editingTimeSheet.clientProjectId = null;
+    }
   }
 }

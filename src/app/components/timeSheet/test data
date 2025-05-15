@@ -1,0 +1,36 @@
+updateTimeSheet(): void { // Removed the timeSheetId argument here
+  if (!this.editingTimeSheet?.timeSheetId) return;
+
+  const { resourceId, workDate, hoursWorked } = this.editingTimeSheet;
+  const clientProjectId = this.editingTimeSheet.clientProjectId; // Use the direct clientProjectId
+
+  if (!resourceId || !clientProjectId || !workDate || hoursWorked === null || !this.selectedClient || !this.selectedProject) {
+    alert('All fields are required!');
+    return;
+  }
+
+  const payload: TimeSheet = {
+    timeSheetId: this.editingTimeSheet.timeSheetId,
+    resourceId,
+    clientProjectId: clientProjectId, // Send clientProjectId directly
+    workDate,
+    hoursWorked,
+    // Do not include client and project objects directly if your backend expects clientProjectId
+    // clientProject: {
+    //   clientProjectId: clientProjectId,
+    //   client: this.selectedClient,
+    //   project: this.selectedProject,
+    // },
+  };
+
+  this.timeSheetService.updateTimeSheet(this.editingTimeSheet.timeSheetId, payload).subscribe({
+    next: () => {
+      this.loadWorkTables();
+      this.cancelEdit();
+    },
+    error: (err) => {
+      alert('Failed to update time sheet');
+      console.error('Update error:', err);
+    },
+  });
+}

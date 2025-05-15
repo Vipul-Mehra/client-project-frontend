@@ -5,7 +5,7 @@ import { TimeSheetComponent } from './components/timeSheet/timeSheet.component';
 
 export const routes: Routes = [
   { path: 'clients', component: ClientListComponent },
-   { path: 'resources', component: ResourceListComponent },
-   { path: 'timesheets', component: TimeSheetComponent },
-//   { path: '', redirectTo: 'timeSheets', pathMatch: 'full' }
+  { path: 'resources', component: ResourceListComponent },
+  { path: 'timeSheets', component: TimeSheetComponent }, // Corrected path
+  { path: '', redirectTo: 'timeSheets', pathMatch: 'full' }, // Redirect to timeSheets
 ];

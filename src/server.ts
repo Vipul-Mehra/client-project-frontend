@@ -1,3 +1,5 @@
+require('source-map-support').install()
+import { renderApplication } from '@angular/platform-server'; // Or other server-specific functions
 import {
   AngularNodeAppEngine,
   createNodeRequestHandler,
