@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ClientService } from '../../services/clientService';
 
 
+
 interface Client {
   clientId: number;
   clientName: string;
@@ -14,7 +15,7 @@ interface Client {
   selector: 'app-client-list',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './client-list.component.html', // ✅ point to external HTML file
+  templateUrl: './client-list.component.html', 
  styleUrls: ['./client-list.component.css']
 })
 export class ClientListComponent implements OnInit {

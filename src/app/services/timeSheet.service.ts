@@ -1,27 +1,31 @@
-// src/app/services/timeSheet.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { PaginatedResponse } from '../model/paginationResponse';
 import { TimeSheet } from '../model/timeSheet';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class TimeSheetService {
-  private apiUrl = 'http://localhost:8080/timeSheets';
+  private apiUrl = '/api/timeSheets';
 
   constructor(private http: HttpClient) {}
 
-  getTimeSheets(): Observable<TimeSheet[]> {
-    return this.http.get<TimeSheet[]>(this.apiUrl);
+  getTimeSheets(page: number = 0, size: number = 10): Observable<PaginatedResponse<TimeSheet>> {
+    const params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    return this.http.get<PaginatedResponse<TimeSheet>>(this.apiUrl, { params });
   }
 
-  addTimeSheet(timeSheet: TimeSheet): Observable<TimeSheet> {
+  addTimeSheet(timeSheet: Omit<TimeSheet, 'timeSheetId'>): Observable<TimeSheet> {
     return this.http.post<TimeSheet>(this.apiUrl, timeSheet);
   }
 
-  updateTimeSheet(id: number, timeSheet: TimeSheet): Observable<TimeSheet> {
-    return this.http.put<TimeSheet>(`${this.apiUrl}/${id}`, timeSheet);
+  updateTimeSheet(id: number, timeSheet: Partial<TimeSheet>): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}`, timeSheet);
   }
 
   deleteTimeSheet(id: number): Observable<void> {

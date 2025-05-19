@@ -46,6 +46,14 @@
     </div>
   </div>
 
+  <!-- Pagination Info -->
+  <div class="mb-3">
+    Showing {{ currentPage * pageSize + 1 }} to
+    {{ getEndIndex() }}
+    of {{ totalRecords }} entries
+  </div>
+
+  <!-- Modal: Add TimeSheet -->
   <div
     class="modal fade"
     id="addTimeSheetModal"
@@ -152,6 +160,7 @@
     </div>
   </div>
 
+  <!-- Modal: Edit TimeSheet -->
   <div
     class="modal fade"
     id="editTimeSheetModal"
@@ -261,6 +270,7 @@
     </div>
   </div>
 
+  <!-- Data Table -->
   <div class="table-responsive">
     <table class="table table-bordered table-striped mt-4">
       <thead class="table-light">
@@ -302,5 +312,33 @@
       </tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- Pagination -->
+  <nav aria-label="Page navigation" *ngIf="totalRecords > 0">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" [class.disabled]="currentPage === 0">
+        <a class="page-link" (click)="goToPage(currentPage - 1)" href="#">Previous</a>
+      </li>
+
+      <li *ngFor="let i of getPages()" [class.active]="i === currentPage">
+        <a class="page-link" (click)="goToPage(i)" href="#">{{ i + 1 }}</a>
+      </li>
+
+      <li class="page-item" [class.disabled]="currentPage >= totalPages - 1">
+        <a class="page-link" (click)="goToPage(currentPage + 1)" href="#">Next</a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Page Size Selector -->
+  <div class="d-flex align-items-center mb-3">
+    <label for="pageSize" class="me-2">Items per page:</label>
+    <select id="pageSize" [(ngModel)]="pageSize" (ngModelChange)="changePageSize($event)">
+      <option [value]="5">5</option>
+      <option [value]="10">10</option>
+      <option [value]="20">20</option>
+      <option [value]="50">50</option>
+    </select>
   </div>
 </div>
